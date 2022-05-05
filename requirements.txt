@@ -1,6 +1,7 @@
 alembic==1.5.4
 attrs==20.3.0
 autopep8==1.5.5
+blinker==1.4
 certifi==2020.12.5
 chardet==4.0.0
 click==7.1.2
@@ -20,7 +21,7 @@ psycopg2-binary==2.9.1
 py==1.10.0
 pycodestyle==2.6.0
 pyparsing==2.4.7
-pytest==6.2.3
+pytest==7.1.2
 python-dateutil==2.8.1
 python-dotenv==0.15.0
 python-editor==1.0.4
