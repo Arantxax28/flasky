@@ -1,4 +1,4 @@
-from flask import Blueprint,jsonify, request
+from flask import Blueprint,jsonify, request, abort, make_response
 from app.models.cats import Cat
 from app import db
 
@@ -28,7 +28,20 @@ def create_one_cat():
 
 @cats_bp.route('', methods = ['GET'])
 def get_all_cats():
-    cats = Cat.query.all()
+    params = request.args
+    if "color" in params and "age" in params:
+        color_name = params["color"]
+        age_value = params["age"]
+        cats = Cat.query.filter_by(color= color_name, age= age_value)
+    elif "color" in params:
+        color_name = params["color"]
+        cats = Cat.query.filter_by(color = color_name)
+    elif "age" in params:
+        age_value = params["age"]
+        cats = Cat.query.filter_by(age = age_value)
+    else:
+        cats = Cat.query.all()
+    # cats = Cat.query.all()
     cats_response = []
     for cat in cats:
         cats_response.append({
@@ -51,20 +64,34 @@ def get_all_cats():
 #             "color": cat.color
 #         })
 #     return jsonify(cat_response), 300
-
-@cats_bp.route("/<cat_id>", methods = ["GET"])
-def get_one_cat(cat_id):
+def get_cat_or_abort(cat_id):
     try:
         cat_id = int(cat_id)
     except ValueError:
         response = {"msg": f"Invalid id: {cat_id}"}
-        return jsonify(response), 400
+        abort(make_response(jsonify(response),400))
 
     chosen_cat = Cat.query.get(cat_id)
 
     if chosen_cat is None:
         response = {"msg": f"Could not find cat with id {cat_id}"}
-        return jsonify(response), 404
+        abort(make_response(jsonify(response),404))
+    return chosen_cat
+
+@cats_bp.route("/<cat_id>", methods = ["GET"])
+def get_one_cat(cat_id):
+    # try:
+    #     cat_id = int(cat_id)
+    # except ValueError:
+    #     response = {"msg": f"Invalid id: {cat_id}"}
+    #     return jsonify(response), 400
+
+    # chosen_cat = Cat.query.get(cat_id)
+
+    # if chosen_cat is None:
+    #     response = {"msg": f"Could not find cat with id {cat_id}"}
+    #     return jsonify(response), 404
+    chosen_cat = get_cat_or_abort(cat_id)
     response = {
         "id": chosen_cat.id,
         "name": chosen_cat.name,
@@ -75,17 +102,18 @@ def get_one_cat(cat_id):
 
 @cats_bp.route("/<cat_id>", methods = ["PUT"])
 def put_one_cat(cat_id):
-    try:
-        cat_id = int(cat_id)
-    except ValueError:
-        response = {"msg": f"Invalid id: {cat_id}"}
-        return jsonify(response), 400
+    # try:
+    #     cat_id = int(cat_id)
+    # except ValueError:
+    #     response = {"msg": f"Invalid id: {cat_id}"}
+    #     return jsonify(response), 400
         
-    chosen_cat = Cat.query.get(cat_id)
+    # chosen_cat = Cat.query.get(cat_id)
 
-    if chosen_cat is None:
-        response = {"msg": f"Could not find cat with id {cat_id}"}
-        return jsonify(response), 404
+    # if chosen_cat is None:
+    #     response = {"msg": f"Could not find cat with id {cat_id}"}
+    #     return jsonify(response), 404
+    chosen_cat = get_cat_or_abort(cat_id)
     request_body = request.get_json()
     try:
         chosen_cat.name = request_body["name"]
@@ -100,16 +128,16 @@ def put_one_cat(cat_id):
 
 @cats_bp.route("/<cat_id>", methods = ["DELETE"])
 def delete_cat(cat_id):
-    try:
-        cat_id = int(cat_id)
-    except ValueError:
-        rsp = {"msg":f'Invalid id: {cat_id}'}
-        return jsonify(rsp), 400
-    chosen_cat = Cat.query.get(cat_id)
-    if chosen_cat is None:
-        response = {"msg": f"Could not find cat with id {cat_id}"}
-        return jsonify(response), 404
-
+    # try:
+    #     cat_id = int(cat_id)
+    # except ValueError:
+    #     rsp = {"msg":f'Invalid id: {cat_id}'}
+    #     return jsonify(rsp), 400
+    # chosen_cat = Cat.query.get(cat_id)
+    # if chosen_cat is None:
+    #     response = {"msg": f"Could not find cat with id {cat_id}"}
+    #     return jsonify(response), 404
+    chosen_cat = get_cat_or_abort(cat_id)
     db.session.delete(chosen_cat)
     db.session.commit()
 
