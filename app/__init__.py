@@ -22,8 +22,14 @@ def create_app(testing=None):
     migrate.init_app(app, db)
 
     from.models.cats import Cat
+    from .models.humans import Human
+    
     
     from .routes.cats import cats_bp
     app.register_blueprint(cats_bp)
+
+    from .routes.humans import humans_bp
+    app.register_blueprint(humans_bp)
+
 
     return app
